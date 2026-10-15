@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Metro Builder</title>
+  <meta name="description" content="Metro Builder — créez le réseau de métro de vos rêves.">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <main class="page">
+    <!-- Décor : lignes de métro animées -->
+    <svg class="menu-bg" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <defs>
+        <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+          <path d="M40 0H0V40" fill="none" stroke="#e8e8ed" stroke-width="1"/>
+        </pattern>
+      </defs>
+      <rect width="1200" height="800" fill="#fbfbfd"/>
+      <rect width="1200" height="800" fill="url(#grid)"/>
+      <g fill="none" stroke-width="10" stroke-linecap="round" stroke-linejoin="round">
+        <path id="bg-l1" d="M-40 200 H320 L440 320 H760 L880 200 H1240" stroke="#21DAFF"/>
+        <path id="bg-l2" d="M200 840 V560 L320 440 V160 L400 80 V-40" stroke="#74EC8D"/>
+        <path id="bg-l3" d="M-40 640 H480 L600 520 H1000 L1120 400 V-40" stroke="#F8DE65"/>
+        <path id="bg-l4" d="M1240 600 H920 L840 680 V840" stroke="#EBB016"/>
+        <path id="bg-l5" d="M760 -40 V160 L880 280 V520" stroke="#FF5C1A"/>
+        <path id="bg-l6" d="M1000 840 V720 L1080 640 H1240" stroke="#FE4B4B"/>
+      </g>
+      <g fill="#fff" stroke="#1d1d1f" stroke-width="4">
+        <circle cx="320" cy="200" r="9"/>
+        <circle cx="440" cy="320" r="9"/>
+        <circle cx="760" cy="320" r="9"/>
+        <circle cx="320" cy="440" r="11"/>
+        <circle cx="200" cy="640" r="11"/>
+        <circle cx="600" cy="520" r="9"/>
+        <circle cx="880" cy="520" r="11"/>
+        <circle cx="1000" cy="520" r="9"/>
+        <circle cx="760" cy="160" r="9"/>
+        <circle cx="880" cy="200" r="9"/>
+        <circle cx="920" cy="600" r="9"/>
+        <circle cx="1080" cy="640" r="9"/>
+        <circle cx="320" cy="160" r="9"/>
+      </g>
+      <g>
+        <rect x="-13" y="-6" width="26" height="12" rx="4" fill="#21DAFF" stroke="#fff" stroke-width="2">
+          <animateMotion dur="14s" repeatCount="indefinite" rotate="auto"><mpath href="#bg-l1"/></animateMotion>
+        </rect>
+        <rect x="-13" y="-6" width="26" height="12" rx="4" fill="#74EC8D" stroke="#fff" stroke-width="2">
+          <animateMotion dur="11s" repeatCount="indefinite" rotate="auto" keyPoints="1;0" keyTimes="0;1" calcMode="linear"><mpath href="#bg-l2"/></animateMotion>
+        </rect>
+        <rect x="-13" y="-6" width="26" height="12" rx="4" fill="#F8DE65" stroke="#fff" stroke-width="2">
+          <animateMotion dur="16s" repeatCount="indefinite" rotate="auto"><mpath href="#bg-l3"/></animateMotion>
+        </rect>
+        <rect x="-13" y="-6" width="26" height="12" rx="4" fill="#FF5C1A" stroke="#fff" stroke-width="2">
+          <animateMotion dur="8s" repeatCount="indefinite" rotate="auto"><mpath href="#bg-l5"/></animateMotion>
+        </rect>
+      </g>
+    </svg>
+
+    <div class="menu">
+      <div class="menu-card glass">
+        <div class="logo-dots" aria-hidden="true">
+          <span></span><span></span><span></span><span></span><span></span><span></span>
+        </div>
+        <h1 class="game-title">Metro Builder</h1>
+        <p class="game-tagline">Dessinez le réseau de métro de vos rêves.</p>
+
+        <nav class="menu-actions">
+          <a class="btn btn-primary" href="city-select.html">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13a1 1 0 0 0 1.52.85l10.4-6.5a1 1 0 0 0 0-1.7L9.52 4.65A1 1 0 0 0 8 5.5z"/></svg>
+            Jouer
+          </a>
+          <a class="btn" href="credits.html">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.6 6.6 19.5l1.2-6L3.3 9.3l6.1-.7z"/></svg>
+            Crédits
+          </a>
+          <!-- TODO : renseigner ici l'URL de la bibliothèque de jeux (lien externe). -->
+          <a class="btn" href="#" id="library-link">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg>
+            Bibliothèque de jeux
+          </a>
+        </nav>
+
+        <p class="menu-footer">Mode créatif · Projet personnel et non commercial</p>
+      </div>
+    </div>
+  </main>
+</body>
+</html>

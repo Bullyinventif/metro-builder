@@ -1,0 +1,686 @@
+/* ==========================================================================
+   Metro Builder — éditeur de jeu
+   ========================================================================== */
+
+body.game {
+  height: 100vh;
+  overflow: hidden;
+  background: #fbfbfd;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+#map {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  touch-action: none;
+}
+
+/* ---------- Boutons icônes ---------- */
+
+.icon-btn {
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text);
+  background: transparent;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.2s var(--ease), transform 0.25s var(--spring), color 0.2s var(--ease), opacity 0.2s;
+}
+
+.icon-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+.icon-btn:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.icon-btn:active {
+  transform: scale(0.92);
+}
+
+.icon-btn.active {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.icon-btn:disabled {
+  opacity: 0.3;
+  cursor: default;
+  background: transparent;
+}
+
+.icon-btn.round {
+  width: 52px;
+  height: 52px;
+}
+
+.icon-btn.round svg {
+  width: 24px;
+  height: 24px;
+}
+
+.icon-btn.round:hover {
+  transform: scale(1.05);
+  background: var(--surface);
+}
+
+.sep {
+  width: 1px;
+  height: 24px;
+  margin: 0 4px;
+  background: rgba(0, 0, 0, 0.1);
+  flex: none;
+}
+
+/* ---------- Haut gauche ---------- */
+
+.top-left {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 10;
+}
+
+.city-pill {
+  height: 52px;
+  padding: 0 20px;
+  border-radius: 26px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  line-height: 1.15;
+}
+
+.city-pill-name {
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: -0.01em;
+}
+
+.city-pill-mode {
+  font-size: 12px;
+  color: var(--text-2);
+}
+
+/* ---------- Barre des lignes ---------- */
+
+.line-bar {
+  position: fixed;
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  max-height: calc(100vh - 240px);
+  width: 72px;
+  padding: 12px 0;
+  border-radius: 36px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  z-index: 10;
+}
+
+.line-list {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 12px;
+  overflow-y: auto;
+  scrollbar-width: none;
+  scroll-behavior: smooth;
+}
+
+.line-list::-webkit-scrollbar {
+  display: none;
+}
+
+.line-chip {
+  position: relative;
+  flex: none;
+  width: 46px;
+  height: 46px;
+  border: none;
+  border-radius: 50%;
+  background: var(--c);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12), inset 0 -2px 0 rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s var(--spring), box-shadow 0.25s var(--ease), opacity 0.2s;
+}
+
+.line-chip:hover {
+  transform: scale(1.08);
+}
+
+.line-chip.unused {
+  opacity: 0.62;
+}
+
+.line-chip.active {
+  opacity: 1;
+  transform: scale(1.1);
+  box-shadow: 0 0 0 3px #fff, 0 0 0 6px var(--c), 0 6px 16px rgba(0, 0, 0, 0.18);
+}
+
+.loop-badge {
+  position: absolute;
+  right: -4px;
+  bottom: -4px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  color: var(--text);
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 18px;
+  box-shadow: var(--shadow-sm);
+}
+
+.line-add {
+  flex: none;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 2px dashed rgba(0, 0, 0, 0.18);
+  background: transparent;
+  color: var(--text-2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s, transform 0.25s var(--spring);
+}
+
+.line-add:hover {
+  border-color: var(--text);
+  color: var(--text);
+  transform: scale(1.06);
+}
+
+.line-add svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* ---------- Aide contextuelle ---------- */
+
+.hint {
+  position: fixed;
+  top: 26px;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: min(640px, calc(100vw - 720px));
+  min-height: 40px;
+  padding: 10px 18px;
+  border-radius: 20px;
+  font-size: 13px;
+  color: var(--text-2);
+  text-align: center;
+  z-index: 9;
+  transition: opacity 0.25s var(--ease);
+}
+
+.hint strong {
+  color: var(--text);
+}
+
+.hint .live-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 8px;
+  border-radius: 50%;
+  background: #34c759;
+  vertical-align: 1px;
+  animation: pulse 1.6s ease-in-out infinite;
+}
+
+/* ---------- Haut droite ---------- */
+
+.top-actions {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  height: 52px;
+  padding: 0 6px;
+  border-radius: 26px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  z-index: 10;
+}
+
+/* ---------- Panneau des règles ---------- */
+
+.rules-panel {
+  position: fixed;
+  top: 86px;
+  right: 20px;
+  width: 310px;
+  max-height: calc(100vh - 210px);
+  border-radius: 24px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 9;
+  transition: transform 0.35s var(--ease), opacity 0.3s var(--ease);
+}
+
+.rules-panel.collapsed {
+  transform: translateX(calc(100% + 30px));
+  opacity: 0;
+  pointer-events: none;
+}
+
+.rules-panel.shake {
+  animation: shake 0.45s var(--ease);
+}
+
+.rules-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 18px 10px;
+  cursor: pointer;
+}
+
+.rules-head h2 {
+  margin: 0;
+  font-size: 16px;
+  letter-spacing: -0.01em;
+}
+
+.rules-head .chevron {
+  width: 18px;
+  height: 18px;
+  color: var(--text-3);
+  transform: rotate(-90deg);
+}
+
+.rules-status {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.rules-status.ok {
+  color: #1f8a3b;
+  background: rgba(52, 199, 89, 0.14);
+}
+
+.rules-status.ko {
+  color: #c43333;
+  background: rgba(254, 75, 75, 0.12);
+}
+
+.rules-list {
+  list-style: none;
+  margin: 0;
+  padding: 4px 10px 8px;
+  overflow-y: auto;
+}
+
+.rule {
+  display: flex;
+  gap: 10px;
+  padding: 8px;
+  border-radius: 14px;
+  transition: background 0.2s var(--ease);
+}
+
+.rule.ko {
+  background: rgba(254, 75, 75, 0.07);
+}
+
+.rule-icon {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  margin-top: 1px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+}
+
+.rule-icon svg {
+  width: 12px;
+  height: 12px;
+}
+
+.rule.ok .rule-icon {
+  background: #34c759;
+}
+
+.rule.ko .rule-icon {
+  background: var(--red);
+}
+
+.rule-title {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.rule.ok .rule-title {
+  color: var(--text-2);
+  font-weight: 500;
+}
+
+.rule-msg {
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--text-2);
+  line-height: 1.4;
+}
+
+.rules-stats {
+  padding: 10px 18px 14px;
+  border-top: 1px solid var(--hairline);
+  font-size: 12px;
+  color: var(--text-2);
+}
+
+/* ---------- Barre d'outils ---------- */
+
+.toolbar {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  padding: 10px;
+  border-radius: 44px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 10;
+}
+
+.tool-btn {
+  width: 52px;
+  height: 52px;
+  border: none;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  transition: background 0.2s var(--ease), color 0.2s var(--ease), transform 0.3s var(--spring), box-shadow 0.25s;
+}
+
+.tool-btn svg {
+  width: 24px;
+  height: 24px;
+}
+
+.tool-btn:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.tool-btn:active {
+  transform: scale(0.9);
+}
+
+.tool-btn.active {
+  background: var(--text);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.tool-btn.active svg circle[fill="#fff"] {
+  fill: var(--text);
+}
+
+.toolbar .sep {
+  height: 36px;
+  margin: 0 6px;
+}
+
+.play-btn {
+  position: relative;
+  width: 68px;
+  height: 68px;
+  border: none;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--green);
+  color: var(--text);
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(116, 236, 141, 0.55), inset 0 -3px 0 rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s var(--spring), background 0.25s var(--ease), box-shadow 0.25s var(--ease), color 0.25s;
+}
+
+.play-btn svg {
+  width: 30px;
+  height: 30px;
+}
+
+.play-btn .icon-pause {
+  display: none;
+}
+
+.play-btn:hover {
+  transform: scale(1.06);
+}
+
+.play-btn:active {
+  transform: scale(0.94);
+}
+
+.play-btn.blocked {
+  background: #e5e5ea;
+  color: #a1a1a6;
+  box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.04);
+  cursor: not-allowed;
+}
+
+.play-btn.blocked:hover {
+  transform: none;
+}
+
+.play-btn.playing {
+  background: var(--text);
+  color: #fff;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+}
+
+.play-btn.playing::after {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 2px solid rgba(29, 29, 31, 0.35);
+  animation: ring 1.8s ease-out infinite;
+}
+
+.play-btn.playing .icon-play {
+  display: none;
+}
+
+.play-btn.playing .icon-pause {
+  display: block;
+}
+
+body.playing .tool-btn:not([data-tool="move"]) {
+  opacity: 0.5;
+}
+
+/* ---------- Popover des liaisons ---------- */
+
+.popover {
+  position: fixed;
+  z-index: 20;
+  display: flex;
+  gap: 4px;
+  padding: 6px;
+  border-radius: 20px;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, calc(-100% - 14px)) scale(0.9);
+  transform-origin: 50% 100%;
+  transition: opacity 0.18s var(--ease), transform 0.25s var(--spring);
+}
+
+.popover.open {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translate(-50%, calc(-100% - 14px)) scale(1);
+}
+
+.popover button {
+  width: 64px;
+  padding: 8px 4px 6px;
+  border: none;
+  border-radius: 14px;
+  background: transparent;
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s var(--ease);
+}
+
+.popover button svg {
+  width: 26px;
+  height: 26px;
+}
+
+.popover button:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.popover button.current {
+  background: var(--text);
+  color: #fff;
+}
+
+.popover button.current svg circle {
+  fill: var(--text);
+}
+
+/* ---------- Toast ---------- */
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 120px;
+  z-index: 30;
+  max-width: min(560px, calc(100vw - 40px));
+  padding: 12px 20px;
+  border-radius: 18px;
+  background: rgba(29, 29, 31, 0.92);
+  color: #fff;
+  font-size: 14px;
+  text-align: center;
+  box-shadow: var(--shadow-lg);
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 12px) scale(0.97);
+  transition: opacity 0.25s var(--ease), transform 0.3s var(--spring);
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translate(-50%, 0) scale(1);
+}
+
+.toast.warn {
+  background: rgba(196, 51, 51, 0.95);
+}
+
+/* ---------- Animations ---------- */
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.45; transform: scale(0.8); }
+}
+
+@keyframes ring {
+  from { opacity: 1; transform: scale(0.95); }
+  to { opacity: 0; transform: scale(1.25); }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-8px); }
+  40% { transform: translateX(7px); }
+  60% { transform: translateX(-5px); }
+  80% { transform: translateX(3px); }
+}
+
+/* ---------- Petits écrans ---------- */
+
+@media (max-width: 1100px) {
+  .hint {
+    top: auto;
+    bottom: 112px;
+    max-width: calc(100vw - 40px);
+  }
+  .toast {
+    bottom: 170px;
+  }
+}
+
+@media (max-width: 640px) {
+  .city-pill {
+    display: none;
+  }
+  .hint {
+    display: none;
+  }
+  .line-bar {
+    left: 12px;
+    width: 64px;
+  }
+  .toolbar {
+    bottom: 14px;
+    gap: 2px;
+    padding: 8px;
+  }
+  .tool-btn {
+    width: 44px;
+    height: 44px;
+  }
+  .play-btn {
+    width: 56px;
+    height: 56px;
+  }
+  .rules-panel {
+    left: 12px;
+    right: 12px;
+    width: auto;
+  }
+  .top-actions {
+    right: 12px;
+  }
+}

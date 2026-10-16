@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Choisir une ville — Metro Builder</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <main class="page">
+    <header class="page-header">
+      <a class="back-btn glass" href="index.html" aria-label="Retour au menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+      </a>
+      <div>
+        <h1 class="page-title">Choisissez une ville</h1>
+        <p class="page-subtitle">Chaque ville donne une palette et une disposition de départ.</p>
+      </div>
+    </header>
+
+    <div class="page-content">
+      <div class="city-grid" id="city-grid"></div>
+    </div>
+  </main>
+
+  <script src="js/cities.js"></script>
+  <script>
+    (function () {
+      'use strict';
+      var grid = document.getElementById('city-grid');
+      var NS = 'http://www.w3.org/2000/svg';
+
+      function el(tag, attrs) {
+        var node = document.createElementNS(NS, tag);
+        for (var k in attrs) node.setAttribute(k, attrs[k]);
+        return node;
+      }
+
+      // Aperçu SVG de la disposition de départ d'une ville
+      function preview(city) {
+        var svg = el('svg', { viewBox: '0 0 400 300', 'aria-hidden': 'true' });
+        var pos = {};
+        var minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+        city.stops.forEach(function (s) {
+          pos[s[0]] = { x: s[1], y: s[2] };
+          minX = Math.min(minX, s[1]); maxX = Math.max(maxX, s[1]);
+          minY = Math.min(minY, s[2]); maxY = Math.max(maxY, s[2]);
+        });
+        var pad = 36;
+        var scale = Math.min((400 - pad * 2) / Math.max(1, maxX - minX), (300 - pad * 2) / Math.max(1, maxY - minY));
+        var ox = 200 - ((minX + maxX) / 2) * scale;
+        var oy = 150 - ((minY + maxY) / 2) * scale;
+        function P(k) { return { x: pos[k].x * scale + ox, y: pos[k].y * scale + oy }; }
+
+        var palette = MetroCities.palette(city);
+        var served = {};
+        city.lines.forEach(function (line) {
+          var pts = line.stops.map(P);
+          line.stops.forEach(function (k) { served[k] = (served[k] || 0) + 1; });
+          var d;
+          if (line.loop && line.style === 'curve') {
+            // Boucle lissée (courbes passant par les milieux)
+            var n = pts.length;
+            var mid = function (a, b) { return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }; };
+            var m0 = mid(pts[n - 1], pts[0]);
+            d = 'M' + m0.x + ' ' + m0.y;
+            for (var i = 0; i < n; i++) {
+              var m = mid(pts[i], pts[(i + 1) % n]);
+              d += ' Q' + pts[i].x + ' ' + pts[i].y + ' ' + m.x + ' ' + m.y;
+            }
+          } else {
+            d = 'M' + pts.map(function (p) { return p.x + ' ' + p.y; }).join(' L');
+            if (line.loop) d += ' Z';
+          }
+          svg.appendChild(el('path', {
+            d: d, fill: 'none', stroke: MetroCities.colorHex(palette, line.color),
+            'stroke-width': 7, 'stroke-linecap': 'round', 'stroke-linejoin': 'round'
+          }));
+        });
+        city.stops.forEach(function (s) {
+          var p = P(s[0]);
+          var big = (served[s[0]] || 0) > 1;
+          svg.appendChild(el('circle', {
+            cx: p.x, cy: p.y, r: big ? 6.5 : 5, fill: '#fff', stroke: '#1d1d1f', 'stroke-width': big ? 3 : 2.5
+          }));
+        });
+        return svg;
+      }
+
+      MetroCities.list().forEach(function (city, index) {
+        var saved = MetroCities.hasSave(city.id);
+        var card = document.createElement('div');
+        card.className = 'city-card';
+        card.setAttribute('role', 'button');
+        card.setAttribute('tabindex', '0');
+        card.style.animationDelay = (index * 0.07) + 's';
+
+        var pv = document.createElement('div');
+        pv.className = 'city-preview';
+        pv.appendChild(preview(city));
+        card.appendChild(pv);
+
+        if (saved) {
+          var badge = document.createElement('span');
+          badge.className = 'badge';
+          badge.textContent = 'Reprendre';
+          card.appendChild(badge);
+        }
+
+        var info = document.createElement('div');
+        info.className = 'city-info';
+        var palette = MetroCities.palette(city);
+        var swatches = palette.colors.map(function (c) {
+          return '<i style="background:' + c.hex + '"></i>';
+        }).join('');
+        info.innerHTML =
+          '<h2 class="city-name"></h2>' +
+          '<p class="city-desc"></p>' +
+          '<div class="city-meta"><span class="city-swatches">' + swatches + '</span>' +
+          '<span>' + city.lines.length + (city.lines.length > 1 ? ' lignes' : ' ligne') +
+          ' · ' + city.stops.length + ' arrêts</span></div>';
+        info.querySelector('.city-name').textContent = city.name;
+        info.querySelector('.city-desc').textContent = city.description;
+        card.appendChild(info);
+
+        if (saved) {
+          var reset = document.createElement('button');
+          reset.className = 'city-reset';
+          reset.type = 'button';
+          reset.textContent = 'Recommencer à zéro';
+          reset.addEventListener('click', function (ev) {
+            ev.stopPropagation();
+            if (confirm('Effacer la partie sauvegardée pour « ' + city.name + ' » ?')) {
+              MetroCities.clearSave(city.id);
+              location.reload();
+            }
+          });
+          info.appendChild(reset);
+        }
+
+        function go() {
+          try { localStorage.setItem('metroBuilder.city', city.id); } catch (e) { /* stockage indisponible */ }
+          location.href = 'game.html?city=' + encodeURIComponent(city.id);
+        }
+        card.addEventListener('click', go);
+        card.addEventListener('keydown', function (ev) {
+          if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); go(); }
+        });
+        grid.appendChild(card);
+      });
+    })();
+  </script>
+</body>
+</html>

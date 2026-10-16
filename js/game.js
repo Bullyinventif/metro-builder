@@ -468,7 +468,10 @@
     var n = 1;
     while (labels.indexOf(String(n)) >= 0) n++;
     checkpoint();
-    var line = { id: uid('l'), label: String(n), color: palette.colors[state.lines.length % palette.colors.length].hex };
+    var used = state.lines.map(function (l) { return l.color.toLowerCase(); });
+    var free = palette.colors.filter(function (c) { return used.indexOf(c.hex.toLowerCase()) < 0; })[0];
+    var color = (free || palette.colors[state.lines.length % palette.colors.length]).hex;
+    var line = { id: uid('l'), label: String(n), color: color };
     state.lines.push(line);
     ui.activeLine = line.id;
     commit();
@@ -950,16 +953,95 @@
         b.appendChild(badge);
       }
       b.title = 'Ligne ' + l.label + (info.used ? ' · ' + info.stops + ' arrêts' + (info.loop ? ' · boucle' : '') : ' · vide') +
-        (i < 9 ? ' (touche ' + (i + 1) + ')' : '');
+        (i < 9 ? ' (touche ' + (i + 1) + ')' : '') +
+        (l.id === ui.activeLine ? ' · cliquez pour changer la couleur' : '');
       b.setAttribute('aria-pressed', l.id === ui.activeLine ? 'true' : 'false');
+      b.dataset.line = l.id;
       b.addEventListener('click', function () {
+        if (l.id === ui.activeLine) {
+          if (colorPickerLine === l.id) closeColorPicker();
+          else openColorPicker(l.id);
+          return;
+        }
+        ui.activeLine = l.id;
+        closeColorPicker();
+        renderLineBar();
+        updateHint();
+      });
+      b.addEventListener('contextmenu', function (ev) {
+        ev.preventDefault();
         ui.activeLine = l.id;
         renderLineBar();
         updateHint();
+        openColorPicker(l.id);
       });
       list.appendChild(b);
     });
     list.scrollTop = scroll;
+  }
+
+  // ---------- Sélecteur de couleur des lignes ----------
+  var colorPickerLine = null;
+
+  function lineById(id) {
+    return state.lines.filter(function (l) { return l.id === id; })[0] || null;
+  }
+
+  function openColorPicker(lineId) {
+    var line = lineById(lineId);
+    if (!line) return;
+    colorPickerLine = lineId;
+    var panel = $('#color-picker');
+    var current = line.color.toLowerCase();
+    var taken = state.lines.filter(function (l) { return l.id !== lineId; })
+      .map(function (l) { return l.color.toLowerCase(); });
+    var families = palette.families || [{ key: '', name: 'Couleurs' }];
+    var html = '<div class="cp-head"><span class="cp-chip" style="--c:' + esc(line.color) + ';color:' + textOn(line.color) + '">' +
+      esc(line.label) + '</span><div><strong>Couleur de la ligne ' + esc(line.label) + '</strong>' +
+      '<span class="cp-current"></span></div></div>';
+    families.forEach(function (f) {
+      var colors = palette.colors.filter(function (c) { return (c.family || '') === f.key; });
+      if (!colors.length) return;
+      html += '<div class="cp-family"><h4>' + esc(f.name) + '</h4><div class="cp-row">';
+      colors.forEach(function (c) {
+        var hex = c.hex.toLowerCase();
+        html += '<button type="button" class="cp-swatch' + (hex === current ? ' selected' : '') +
+          (taken.indexOf(hex) >= 0 ? ' taken' : '') + '" data-hex="' + c.hex + '" style="--c:' + c.hex +
+          ';color:' + textOn(c.hex) + '" title="' + esc(c.name) + (taken.indexOf(hex) >= 0 ? ' (déjà utilisée)' : '') +
+          '" aria-label="' + esc(c.name) + '" aria-pressed="' + (hex === current) + '">' + CHECK + '</button>';
+      });
+      html += '</div></div>';
+    });
+    panel.innerHTML = html;
+    var named = palette.colors.filter(function (c) { return c.hex.toLowerCase() === current; })[0];
+    panel.querySelector('.cp-current').textContent = named ? named.name : line.color.toUpperCase();
+    var chip = document.querySelector('.line-chip[data-line="' + lineId + '"]');
+    panel.classList.add('open');
+    panel.setAttribute('aria-hidden', 'false');
+    if (chip) {
+      var r = chip.getBoundingClientRect();
+      var h = panel.offsetHeight;
+      var top = Math.max(12, Math.min(window.innerHeight - h - 12, r.top + r.height / 2 - 40));
+      panel.style.top = top + 'px';
+    }
+  }
+
+  function closeColorPicker() {
+    if (!colorPickerLine) return;
+    colorPickerLine = null;
+    var panel = $('#color-picker');
+    panel.classList.remove('open');
+    panel.setAttribute('aria-hidden', 'true');
+  }
+
+  function setLineColor(lineId, hex) {
+    var line = lineById(lineId);
+    if (!line || line.color.toLowerCase() === hex.toLowerCase()) return;
+    if (playing) pause('edit');
+    checkpoint();
+    line.color = hex;
+    commit();
+    openColorPicker(lineId);
   }
 
   var CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
@@ -1103,6 +1185,14 @@
   }
 
   $('#seg-popover').addEventListener('pointerdown', function (ev) { ev.stopPropagation(); });
+  $('#color-picker').addEventListener('pointerdown', function (ev) { ev.stopPropagation(); });
+  $('#color-picker').addEventListener('click', function (ev) {
+    var sw = ev.target.closest('.cp-swatch');
+    if (sw && colorPickerLine) setLineColor(colorPickerLine, sw.dataset.hex);
+  });
+  document.addEventListener('pointerdown', function (ev) {
+    if (colorPickerLine && !ev.target.closest('#color-picker, .line-chip')) closeColorPicker();
+  });
   $('#seg-popover').addEventListener('click', function (ev) {
     var btn = ev.target.closest('button');
     if (!btn || !ui.popover) return;
@@ -1324,7 +1414,7 @@
     if ((ev.ctrlKey || ev.metaKey) && k === 'y') { ev.preventDefault(); redo(); return; }
     if (ev.ctrlKey || ev.metaKey || ev.altKey) return;
     if (k === ' ') { ev.preventDefault(); togglePlay(); return; }
-    if (k === 'escape') { ui.selected = null; hidePopover(); updateHint(); return; }
+    if (k === 'escape') { ui.selected = null; hidePopover(); closeColorPicker(); updateHint(); return; }
     if (k === 'v' || k === 'c') setTool('cursor');
     else if (k === 'p') setTool('point');
     else if (k === 'm' || k === 'h') setTool('move');

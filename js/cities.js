@@ -7,16 +7,57 @@
 
   var SAVE_PREFIX = 'metroBuilder.save.v1.';
 
+  // Palette étendue : les 6 premières couleurs sont la palette d'origine (couleurs par défaut des lignes).
+  // Les autres sont regroupées par famille pour le sélecteur de couleur de l'éditeur.
+  var FAMILIES = [
+    { key: 'bleus', name: 'Bleus' },
+    { key: 'verts', name: 'Verts' },
+    { key: 'jaunes', name: 'Jaunes et oranges' },
+    { key: 'rouges', name: 'Rouges' },
+    { key: 'roses', name: 'Roses' },
+    { key: 'violets', name: 'Violets' },
+    { key: 'marrons', name: 'Marrons' },
+    { key: 'gris', name: 'Gris' }
+  ];
+
   var PALETTES = {
     base: {
       name: 'Classique',
+      families: FAMILIES,
       colors: [
-        { key: 'blue', name: 'Bleu', hex: '#21DAFF' },
-        { key: 'green', name: 'Vert', hex: '#74EC8D' },
-        { key: 'yellow', name: 'Jaune', hex: '#F8DE65' },
-        { key: 'orange', name: 'Orange', hex: '#EBB016' },
-        { key: 'redorange', name: 'Rouge-orangé', hex: '#FF5C1A' },
-        { key: 'red', name: 'Rouge', hex: '#FE4B4B' }
+        { key: 'blue', name: 'Bleu', hex: '#21DAFF', family: 'bleus' },
+        { key: 'green', name: 'Vert', hex: '#74EC8D', family: 'verts' },
+        { key: 'yellow', name: 'Jaune', hex: '#F8DE65', family: 'jaunes' },
+        { key: 'orange', name: 'Orange', hex: '#EBB016', family: 'jaunes' },
+        { key: 'redorange', name: 'Rouge-orangé', hex: '#FF5C1A', family: 'rouges' },
+        { key: 'red', name: 'Rouge', hex: '#FE4B4B', family: 'rouges' },
+        { key: 'sky', name: 'Bleu ciel', hex: '#7CC8FF', family: 'bleus' },
+        { key: 'royal', name: 'Bleu roi', hex: '#3D7BFF', family: 'bleus' },
+        { key: 'navy', name: 'Bleu marine', hex: '#2F4A9E', family: 'bleus' },
+        { key: 'teal', name: 'Turquoise', hex: '#2EC4B6', family: 'bleus' },
+        { key: 'mint', name: 'Menthe', hex: '#A6F0C6', family: 'verts' },
+        { key: 'lime', name: 'Vert citron', hex: '#B5E44C', family: 'verts' },
+        { key: 'emerald', name: 'Émeraude', hex: '#22B573', family: 'verts' },
+        { key: 'forest', name: 'Vert sapin', hex: '#2E7D4F', family: 'verts' },
+        { key: 'olive', name: 'Olive', hex: '#9AA84A', family: 'verts' },
+        { key: 'lemon', name: 'Citron', hex: '#FFF07A', family: 'jaunes' },
+        { key: 'apricot', name: 'Abricot', hex: '#FFB26B', family: 'jaunes' },
+        { key: 'sand', name: 'Sable', hex: '#E9CF9E', family: 'jaunes' },
+        { key: 'coral', name: 'Corail', hex: '#FF7A6B', family: 'rouges' },
+        { key: 'cherry', name: 'Cerise', hex: '#E0245E', family: 'rouges' },
+        { key: 'burgundy', name: 'Bordeaux', hex: '#9E2A3F', family: 'rouges' },
+        { key: 'blush', name: 'Rose pastel', hex: '#FFB3CF', family: 'roses' },
+        { key: 'pink', name: 'Rose bonbon', hex: '#FF6FAE', family: 'roses' },
+        { key: 'fuchsia', name: 'Fuchsia', hex: '#E04BC8', family: 'roses' },
+        { key: 'lavender', name: 'Lavande', hex: '#B9A6FF', family: 'violets' },
+        { key: 'purple', name: 'Violet', hex: '#8E5CF0', family: 'violets' },
+        { key: 'plum', name: 'Prune', hex: '#6B3FA0', family: 'violets' },
+        { key: 'caramel', name: 'Caramel', hex: '#C98A4B', family: 'marrons' },
+        { key: 'brown', name: 'Marron', hex: '#8B5E3C', family: 'marrons' },
+        { key: 'chocolate', name: 'Chocolat', hex: '#5E4030', family: 'marrons' },
+        { key: 'silver', name: 'Gris clair', hex: '#C3C8CF', family: 'gris' },
+        { key: 'grey', name: 'Gris', hex: '#8E949C', family: 'gris' },
+        { key: 'graphite', name: 'Anthracite', hex: '#4A4F57', family: 'gris' }
       ]
     }
   };
@@ -169,6 +210,193 @@
         { label: 'L', color: 'blue', stops: ['av8', 's14', 'union', 'bedford', 'canarsie'] },
         { label: 'N', color: 'yellow', stops: ['astoria', 'qboro', 'lex59', 'times', 'herald', 'union', 'canal', 'atlantic', 'coney'] }
       ]
+    },
+    {
+      id: 'tokyo',
+      name: 'Tokyo',
+      description: 'La boucle Yamanote encercle le centre, traversée par les lignes Ginza, Marunouchi, Hibiya et Tōzai.',
+      palette: 'base',
+      stops: [
+        ['tokyo', 4, 0, 'Tōkyō'],
+        ['akihabara', 4, -3, 'Akihabara'],
+        ['ueno', 3, -6, 'Ueno'],
+        ['ikebukuro', -4, -6, 'Ikebukuro'],
+        ['shinjuku', -6, -1, 'Shinjuku'],
+        ['shibuya', -5, 4, 'Shibuya'],
+        ['shinagawa', 1, 6, 'Shinagawa'],
+        ['hamamatsucho', 3, 3, 'Hamamatsuchō'],
+        ['omotesando', -3, 3, 'Omotesandō'],
+        ['ginza', 2, 1, 'Ginza'],
+        ['nihombashi', 3, -1, 'Nihombashi'],
+        ['asakusa', 5, -7, 'Asakusa'],
+        ['korakuen', 0, -4, 'Kōrakuen'],
+        ['otemachi', 2, -1, 'Ōtemachi'],
+        ['kasumigaseki', 0, 3, 'Kasumigaseki'],
+        ['yotsuya', -3, 0, 'Yotsuya'],
+        ['ebisu', -3, 6, 'Ebisu'],
+        ['roppongi', -1, 4, 'Roppongi'],
+        ['hibiya', 1, 1, 'Hibiya'],
+        ['kitasenju', 6, -9, 'Kita-Senju'],
+        ['takadanobaba', -6, -4, 'Takadanobaba'],
+        ['iidabashi', -1, -3, 'Iidabashi'],
+        ['kiba', 6, 1, 'Kiba']
+      ],
+      lines: [
+        { label: 'JY', color: 'lime', loop: true, stops: ['tokyo', 'akihabara', 'ueno', 'ikebukuro', 'shinjuku', 'shibuya', 'shinagawa', 'hamamatsucho'] },
+        { label: 'G', color: 'orange', stops: ['shibuya', 'omotesando', 'ginza', 'nihombashi', 'ueno', 'asakusa'] },
+        { label: 'M', color: 'red', stops: ['ikebukuro', 'korakuen', 'otemachi', 'tokyo', 'ginza', 'kasumigaseki', 'yotsuya', 'shinjuku'] },
+        { label: 'H', color: 'grey', stops: ['ebisu', 'roppongi', 'kasumigaseki', 'hibiya', 'akihabara', 'kitasenju'] },
+        { label: 'T', color: 'sky', stops: ['takadanobaba', 'iidabashi', 'otemachi', 'nihombashi', 'kiba'] }
+      ]
+    },
+    {
+      id: 'berlin',
+      name: 'Berlin',
+      description: 'Le Ringbahn fait le tour de la ville ; les lignes U2, U6, U7 et U8 le traversent.',
+      palette: 'base',
+      stops: [
+        ['westkreuz', -7, 0, 'Westkreuz'],
+        ['westend', -5, -4, 'Westend'],
+        ['wedding', -2, -6, 'Wedding'],
+        ['gesundbrunnen', 0, -6, 'Gesundbrunnen'],
+        ['schoenhauser', 3, -5, 'Schönhauser Allee'],
+        ['ostkreuz', 7, 0, 'Ostkreuz'],
+        ['neukoelln', 3, 5, 'Neukölln'],
+        ['tempelhof', 0, 5, 'Tempelhof'],
+        ['suedkreuz', -1, 6, 'Südkreuz'],
+        ['innsbrucker', -5, 4, 'Innsbrucker Platz'],
+        ['theodorheuss', -9, -2, 'Theodor-Heuss-Platz'],
+        ['zoo', -3, 0, 'Zoologischer Garten'],
+        ['potsdamer', -1, 1, 'Potsdamer Platz'],
+        ['alex', 2, -1, 'Alexanderplatz'],
+        ['pankow', 3, -8, 'Pankow'],
+        ['tegel', -2, -10, 'Alt-Tegel'],
+        ['friedrich', 0, -1, 'Friedrichstraße'],
+        ['mehringdamm', 0, 3, 'Mehringdamm'],
+        ['mariendorf', 0, 8, 'Alt-Mariendorf'],
+        ['wittenau', 1, -10, 'Wittenau'],
+        ['kotti', 2, 2, 'Kottbusser Tor'],
+        ['hermannplatz', 3, 3, 'Hermannplatz'],
+        ['hermannstr', 4, 7, 'Hermannstraße'],
+        ['spandau', -11, -4, 'Rathaus Spandau'],
+        ['bismarck', -5, -1, 'Bismarckstraße'],
+        ['rudow', 6, 9, 'Rudow']
+      ],
+      lines: [
+        { label: 'S41', color: 'caramel', loop: true, style: 'curve', stops: ['westkreuz', 'westend', 'wedding', 'gesundbrunnen', 'schoenhauser', 'ostkreuz', 'neukoelln', 'tempelhof', 'suedkreuz', 'innsbrucker'] },
+        { label: 'U2', color: 'red', stops: ['theodorheuss', 'zoo', 'potsdamer', 'alex', 'schoenhauser', 'pankow'] },
+        { label: 'U6', color: 'purple', stops: ['tegel', 'wedding', 'friedrich', 'mehringdamm', 'tempelhof', 'mariendorf'] },
+        { label: 'U7', color: 'sky', stops: ['spandau', 'bismarck', 'mehringdamm', 'hermannplatz', 'neukoelln', 'rudow'] },
+        { label: 'U8', color: 'royal', stops: ['wittenau', 'gesundbrunnen', 'alex', 'kotti', 'hermannplatz', 'hermannstr'] }
+      ]
+    },
+    {
+      id: 'madrid',
+      name: 'Madrid',
+      description: 'La Circular (ligne 6) entoure le centre, Sol réunit les lignes 1, 2 et 3.',
+      palette: 'base',
+      stops: [
+        ['moncloa', -5, -2, 'Moncloa'],
+        ['cuatro', -1, -5, 'Cuatro Caminos'],
+        ['nuevos', 3, -4, 'Nuevos Ministerios'],
+        ['america', 6, -1, 'Avenida de América'],
+        ['becerra', 6, 2, 'Manuel Becerra'],
+        ['pacifico', 3, 6, 'Pacífico'],
+        ['legazpi', -1, 7, 'Legazpi'],
+        ['pio', -6, 3, 'Príncipe Pío'],
+        ['castilla', 1, -9, 'Plaza de Castilla'],
+        ['bilbao', 0, -2, 'Bilbao'],
+        ['sol', 0, 1, 'Sol'],
+        ['atocha', 2, 4, 'Atocha'],
+        ['valdecarros', 5, 10, 'Valdecarros'],
+        ['opera', -2, 1, 'Ópera'],
+        ['goya', 4, 0, 'Goya'],
+        ['rosas', 9, 3, 'Las Rosas'],
+        ['espana', -3, -1, 'Plaza de España'],
+        ['callao', -1, 0, 'Callao'],
+        ['villaverde', -2, 11, 'Villaverde Alto'],
+        ['fuencarral', 3, -9, 'Fuencarral'],
+        ['puertasur', -9, 7, 'Puerta del Sur']
+      ],
+      lines: [
+        { label: '6', color: 'grey', loop: true, stops: ['moncloa', 'cuatro', 'nuevos', 'america', 'becerra', 'pacifico', 'legazpi', 'pio'] },
+        { label: '1', color: 'sky', stops: ['castilla', 'cuatro', 'bilbao', 'sol', 'atocha', 'pacifico', 'valdecarros'] },
+        { label: '2', color: 'red', stops: ['cuatro', 'opera', 'sol', 'goya', 'becerra', 'rosas'] },
+        { label: '3', color: 'yellow', stops: ['moncloa', 'espana', 'callao', 'sol', 'legazpi', 'villaverde'] },
+        { label: '10', color: 'navy', stops: ['fuencarral', 'nuevos', 'espana', 'pio', 'puertasur'] }
+      ]
+    },
+    {
+      id: 'moscou',
+      name: 'Moscou',
+      description: 'La célèbre ligne circulaire Koltsevaïa relie toutes les radiales qui se croisent au centre.',
+      palette: 'base',
+      stops: [
+        ['belorusskaya', -3, -4, 'Biélorousskaïa'],
+        ['prospektmira', 1, -5, 'Prospekt Mira'],
+        ['komsomolskaya', 4, -3, 'Komsomolskaïa'],
+        ['kurskaya', 5, 1, 'Kourskaïa'],
+        ['taganskaya', 3, 4, 'Taganskaïa'],
+        ['paveletskaya', 0, 5, 'Paveletskaïa'],
+        ['oktyabrskaya', -3, 4, 'Oktiabrskaïa'],
+        ['parkkultury', -5, 1, 'Park Koultoury'],
+        ['kiyevskaya', -5, -2, 'Kievskaïa'],
+        ['sokolniki', 4, -8, 'Sokolniki'],
+        ['lubyanka', 1, -1, 'Loubianka'],
+        ['okhotny', 0, 0, 'Okhotny Riad'],
+        ['yugozapadnaya', -8, 5, 'Iougo-Zapadnaïa'],
+        ['rechnoy', -5, -9, 'Retchnoï Vokzal'],
+        ['teatralnaya', 0, 1, 'Teatralnaïa'],
+        ['krasnogvardeyskaya', 3, 10, 'Krasnogvardeïskaïa'],
+        ['medvedkovo', 2, -10, 'Medvedkovo'],
+        ['kitaygorod', 2, 0, 'Kitaï-Gorod'],
+        ['novoyasenevskaya', -4, 10, 'Novoiassenevskaïa'],
+        ['planernaya', -9, -6, 'Planernaïa'],
+        ['barrikadnaya', -4, -4, 'Barrikadnaïa'],
+        ['kotelniki', 7, 8, 'Kotelniki'],
+        ['arbatskaya', -2, -1, 'Arbatskaïa'],
+        ['revolyutsii', 1, -2, 'Plochtchad Revolioutsii'],
+        ['shchyolkovskaya', 9, -3, 'Chtchiolkovskaïa']
+      ],
+      lines: [
+        { label: '5', color: 'brown', loop: true, style: 'curve', stops: ['belorusskaya', 'prospektmira', 'komsomolskaya', 'kurskaya', 'taganskaya', 'paveletskaya', 'oktyabrskaya', 'parkkultury', 'kiyevskaya'] },
+        { label: '1', color: 'red', stops: ['sokolniki', 'komsomolskaya', 'lubyanka', 'okhotny', 'parkkultury', 'yugozapadnaya'] },
+        { label: '2', color: 'emerald', stops: ['rechnoy', 'belorusskaya', 'teatralnaya', 'paveletskaya', 'krasnogvardeyskaya'] },
+        { label: '3', color: 'navy', stops: ['kiyevskaya', 'arbatskaya', 'revolyutsii', 'kurskaya', 'shchyolkovskaya'] },
+        { label: '6', color: 'orange', stops: ['medvedkovo', 'prospektmira', 'kitaygorod', 'oktyabrskaya', 'novoyasenevskaya'] },
+        { label: '7', color: 'purple', stops: ['planernaya', 'barrikadnaya', 'kitaygorod', 'taganskaya', 'kotelniki'] }
+      ]
+    },
+    {
+      id: 'montreal',
+      name: 'Montréal',
+      description: 'Pas de ligne circulaire : la boucle se forme entre les lignes orange et verte, de Lionel-Groulx à Berri-UQAM.',
+      palette: 'base',
+      stops: [
+        ['cotevertu', -8, -5, 'Côte-Vertu'],
+        ['snowdon', -6, 0, 'Snowdon'],
+        ['lionelgroulx', -3, 4, 'Lionel-Groulx'],
+        ['bonaventure', 0, 3, 'Bonaventure'],
+        ['berri', 3, 1, 'Berri-UQAM'],
+        ['jeantalon', 1, -4, 'Jean-Talon'],
+        ['montmorency', -2, -9, 'Montmorency'],
+        ['angrignon', -6, 7, 'Angrignon'],
+        ['atwater', -2, 2, 'Atwater'],
+        ['mcgill', 0, 1, 'McGill'],
+        ['pieix', 7, -1, 'Pie-IX'],
+        ['beaugrand', 10, -2, 'Honoré-Beaugrand'],
+        ['udem', -4, -2, 'Université-de-Montréal'],
+        ['parc', -1, -4, 'Parc'],
+        ['stmichel', 4, -5, 'Saint-Michel'],
+        ['jeandrapeau', 5, 3, 'Jean-Drapeau'],
+        ['longueuil', 7, 5, 'Longueuil']
+      ],
+      lines: [
+        { label: '2', color: 'orange', stops: ['cotevertu', 'snowdon', 'lionelgroulx', 'bonaventure', 'berri', 'jeantalon', 'montmorency'] },
+        { label: '1', color: 'emerald', stops: ['angrignon', 'lionelgroulx', 'atwater', 'mcgill', 'berri', 'pieix', 'beaugrand'] },
+        { label: '5', color: 'royal', stops: ['snowdon', 'udem', 'parc', 'jeantalon', 'stmichel'] },
+        { label: '4', color: 'yellow', stops: ['berri', 'jeandrapeau', 'longueuil'] }
+      ]
     }
   ];
 
@@ -235,6 +463,7 @@
   global.MetroCities = {
     SAVE_PREFIX: SAVE_PREFIX,
     PALETTES: PALETTES,
+    FAMILIES: FAMILIES,
     list: function () { return CITIES.slice(); },
     get: get,
     palette: palette,

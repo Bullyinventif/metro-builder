@@ -110,8 +110,12 @@
         var info = document.createElement('div');
         info.className = 'city-info';
         var palette = MetroCities.palette(city);
-        var swatches = palette.colors.map(function (c) {
-          return '<i style="background:' + c.hex + '"></i>';
+        var swatches = city.lines.map(function (l) {
+          return MetroCities.colorHex(palette, l.color);
+        }).filter(function (hex, i, all) {
+          return all.indexOf(hex) === i;
+        }).map(function (hex) {
+          return '<i style="background:' + hex + '"></i>';
         }).join('');
         info.innerHTML =
           '<h2 class="city-name"></h2>' +

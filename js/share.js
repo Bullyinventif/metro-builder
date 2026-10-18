@@ -41,7 +41,7 @@
     return {
       v: 1,
       c: cityId,
-      s: state.stops.map(function (s) { return [s.id, s.x, s.y, s.name]; }),
+      s: state.stops.map(function (s) { return s.color ? [s.id, s.x, s.y, s.name, s.color] : [s.id, s.x, s.y, s.name]; }),
       l: state.lines.map(function (l) { return [l.id, l.label, l.color]; }),
       e: state.edges.map(function (e) {
         return [e.id, e.line, e.a, e.b, e.style || 'straight', e.side || 1,
@@ -73,8 +73,13 @@
     var stops = arr(c.s, LIMITS.stops, 'arrêts').map(function (row) {
       if (!Array.isArray(row) || row.length < 4) throw new Error('Arrêt invalide');
       if (!ID_RE.test(String(row[0]))) throw new Error('Identifiant d’arrêt invalide');
-      return { id: String(row[0]), x: num(row[1], LIMITS.coord), y: num(row[2], LIMITS.coord),
+      var stop = { id: String(row[0]), x: num(row[1], LIMITS.coord), y: num(row[2], LIMITS.coord),
         name: clean(row[3], LIMITS.name) || 'Station' };
+      if (row[4] !== undefined) {
+        if (!HEX_RE.test(String(row[4]))) throw new Error('Couleur d’arrêt invalide');
+        stop.color = String(row[4]);
+      }
+      return stop;
     });
     var lines = arr(c.l, LIMITS.lines, 'lignes').map(function (row) {
       if (!Array.isArray(row) || row.length < 3) throw new Error('Ligne invalide');

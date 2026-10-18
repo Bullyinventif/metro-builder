@@ -2,6 +2,16 @@
    Metro Builder — éditeur de jeu
    ========================================================================== */
 
+/* Mobile : pas de flash bleu qui recouvre l'écran au toucher */
+*, *::before, *::after {
+  -webkit-tap-highlight-color: transparent;
+}
+
+input, textarea {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
 body.game {
   height: 100vh;
   overflow: hidden;
@@ -958,4 +968,34 @@ body.playing .tool-btn:not([data-tool="move"]) {
 @keyframes fade {
   from { opacity: 0; }
   to { opacity: 1; }
+}
+
+/* ---------- Retirer la couleur d'un arrêt ---------- */
+
+.cp-clear {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  margin: 12px 0 6px;
+  padding: 10px;
+  border: none;
+  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.05);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.cp-clear svg {
+  width: 14px;
+  height: 14px;
+}
+
+.cp-clear:disabled {
+  opacity: 0.4;
+  cursor: default;
 }

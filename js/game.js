@@ -449,6 +449,7 @@
       ui.selected = linkStops(ui.selected, s.id) ? s.id : null;
     }
     commit();
+    openStopPicker(s.id);
   }
 
   function renameStop(s) {
@@ -792,7 +793,7 @@
       ctx.beginPath();
       ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
       var erase = hot && ui.tool === 'eraser';
-      ctx.fillStyle = erase ? '#ffe3e3' : '#fff';
+      ctx.fillStyle = erase ? '#ffe3e3' : (s.color || '#fff');
       ctx.fill();
       ctx.lineWidth = n > 1 ? 3.5 : 3;
       if (n === 0) {
@@ -982,6 +983,7 @@
 
   // ---------- Sélecteur de couleur des lignes ----------
   var colorPickerLine = null;
+  var colorPickerStop = null;
 
   function lineById(id) {
     return state.lines.filter(function (l) { return l.id === id; })[0] || null;
@@ -991,6 +993,7 @@
     var line = lineById(lineId);
     if (!line) return;
     colorPickerLine = lineId;
+    colorPickerStop = null;
     var panel = $('#color-picker');
     var current = line.color.toLowerCase();
     var taken = state.lines.filter(function (l) { return l.id !== lineId; })
@@ -1027,8 +1030,9 @@
   }
 
   function closeColorPicker() {
-    if (!colorPickerLine) return;
+    if (!colorPickerLine && !colorPickerStop) return;
     colorPickerLine = null;
+    colorPickerStop = null;
     var panel = $('#color-picker');
     panel.classList.remove('open');
     panel.setAttribute('aria-hidden', 'true');
@@ -1042,6 +1046,57 @@
     line.color = hex;
     commit();
     openColorPicker(lineId);
+  }
+
+  // ---------- Couleur d'un arrêt (facultative) ----------
+  function openStopPicker(stopId) {
+    var s = stopMap.get(stopId);
+    if (!s) return;
+    if (playing) pause('edit');
+    colorPickerLine = null;
+    colorPickerStop = stopId;
+    var panel = $('#color-picker');
+    var current = s.color ? s.color.toLowerCase() : '';
+    var families = palette.families || [{ key: '', name: 'Couleurs' }];
+    var html = '<div class="cp-head"><span class="cp-chip" style="--c:' + (s.color || '#ffffff') + ';color:' +
+      (s.color ? textOn(s.color) : '#1d1d1f') + '">●</span>' +
+      '<div><strong>Couleur de l’arrêt</strong><span class="cp-current"></span></div></div>';
+    families.forEach(function (f) {
+      var colors = palette.colors.filter(function (c) { return (c.family || '') === f.key; });
+      if (!colors.length) return;
+      html += '<div class="cp-family"><h4>' + esc(f.name) + '</h4><div class="cp-row">';
+      colors.forEach(function (c) {
+        var hex = c.hex.toLowerCase();
+        html += '<button type="button" class="cp-swatch' + (hex === current ? ' selected' : '') +
+          '" data-hex="' + c.hex + '" style="--c:' + c.hex + ';color:' + textOn(c.hex) +
+          '" title="' + esc(c.name) + '" aria-label="' + esc(c.name) + '" aria-pressed="' + (hex === current) + '">' +
+          CHECK + '</button>';
+      });
+      html += '</div></div>';
+    });
+    html += '<button type="button" class="cp-clear" data-clear="1"' + (s.color ? '' : ' disabled') + '>' +
+      CROSS + '<span>Retirer la couleur</span></button>';
+    panel.innerHTML = html;
+    var named = palette.colors.filter(function (c) { return c.hex.toLowerCase() === current; })[0];
+    panel.querySelector('.cp-current').textContent = s.color ? (named ? named.name : s.color.toUpperCase()) : 'Aucune couleur';
+    panel.classList.add('open');
+    panel.setAttribute('aria-hidden', 'false');
+    var sp = toScreen(W(s));
+    var h = panel.offsetHeight;
+    panel.style.top = Math.max(12, Math.min(window.innerHeight - h - 12, sp.y - h / 2)) + 'px';
+  }
+
+  // Cliquer la couleur déjà choisie (ou « Retirer ») enlève la couleur de l'arrêt
+  function setStopColor(stopId, hex) {
+    var s = stopMap.get(stopId);
+    if (!s) return;
+    var same = !!s.color && !!hex && s.color.toLowerCase() === hex.toLowerCase();
+    var next = same ? null : (hex || null);
+    if ((s.color || null) === next) return;
+    checkpoint();
+    if (next) s.color = next; else delete s.color;
+    commit();
+    openStopPicker(stopId);
   }
 
   var CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
@@ -1187,11 +1242,17 @@
   $('#seg-popover').addEventListener('pointerdown', function (ev) { ev.stopPropagation(); });
   $('#color-picker').addEventListener('pointerdown', function (ev) { ev.stopPropagation(); });
   $('#color-picker').addEventListener('click', function (ev) {
+    if (colorPickerStop) {
+      if (ev.target.closest('.cp-clear')) { setStopColor(colorPickerStop, null); return; }
+      var sws = ev.target.closest('.cp-swatch');
+      if (sws) setStopColor(colorPickerStop, sws.dataset.hex);
+      return;
+    }
     var sw = ev.target.closest('.cp-swatch');
     if (sw && colorPickerLine) setLineColor(colorPickerLine, sw.dataset.hex);
   });
   document.addEventListener('pointerdown', function (ev) {
-    if (colorPickerLine && !ev.target.closest('#color-picker, .line-chip')) closeColorPicker();
+    if ((colorPickerLine || colorPickerStop) && !ev.target.closest('#color-picker, .line-chip')) closeColorPicker();
   });
   $('#seg-popover').addEventListener('click', function (ev) {
     var btn = ev.target.closest('button');
@@ -1257,7 +1318,14 @@
 
     if (ui.tool === 'cursor') {
       var s = hitStop(wp);
-      if (s) { drag = { type: 'stop', id: s.id, start: sp, last: sp, moved: false }; return; }
+      if (s) {
+        var d0 = { type: 'stop', id: s.id, start: sp, last: sp, moved: false, longPressed: false };
+        drag = d0;
+        d0.lp = setTimeout(function () {
+          if (drag === d0 && !d0.moved) { d0.longPressed = true; openStopPicker(s.id); }
+        }, 500);
+        return;
+      }
       var b = hitBend(wp);
       if (b) { drag = { type: 'bend', edge: b.edge, idx: b.idx, start: sp, last: sp, moved: false }; return; }
       drag = { type: 'empty', start: sp, last: sp, moved: false };
@@ -1302,7 +1370,7 @@
         }
         break;
       case 'stop':
-        if (far && !drag.moved) { drag.moved = true; checkpoint(); updateCursor(); }
+        if (far && !drag.moved) { drag.moved = true; clearTimeout(drag.lp); checkpoint(); updateCursor(); }
         if (drag.moved) {
           var g = snapGrid(toWorld(sp));
           var s = stopMap.get(drag.id);
@@ -1339,10 +1407,11 @@
     if (!drag) return;
     var d = drag;
     drag = null;
+    clearTimeout(d.lp);
     if (!cancelled) {
       switch (d.type) {
         case 'stop':
-          if (d.moved) commit(); else clickStop(d.id);
+          if (d.moved) commit(); else if (!d.longPressed) clickStop(d.id);
           break;
         case 'bend':
           if (d.moved) commit();
@@ -1372,7 +1441,12 @@
   canvas.addEventListener('pointerup', function (ev) { endPointer(ev, false); });
   canvas.addEventListener('pointercancel', function (ev) { endPointer(ev, true); });
   canvas.addEventListener('pointerleave', function () { if (!drag) { ui.mouse = null; ui.hover = null; } });
-  canvas.addEventListener('contextmenu', function (ev) { ev.preventDefault(); });
+  canvas.addEventListener('contextmenu', function (ev) {
+    ev.preventDefault();
+    if (ui.tool !== 'cursor' || playing) return;
+    var s = hitStop(toWorld(screenPt(ev)));
+    if (s) openStopPicker(s.id);
+  });
 
   canvas.addEventListener('wheel', function (ev) {
     ev.preventDefault();

@@ -1440,6 +1440,117 @@
   window.addEventListener('beforeunload', function () { pause(); saveNow(); });
   window.addEventListener('resize', function () { resize(); });
 
+  // ---------- Export / import (code texte ou lien) ----------
+  var sheet = $('#share-sheet');
+  var importMsg = $('#import-msg');
+  var exportSeq = 0;
+
+  function showTab(tab) {
+    document.querySelectorAll('.sheet-tab').forEach(function (b) {
+      var on = b.dataset.tab === tab;
+      b.classList.toggle('active', on);
+      b.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+    document.querySelectorAll('.sheet-panel').forEach(function (p) { p.hidden = p.dataset.panel !== tab; });
+    $('#sheet-title').textContent = tab === 'export' ? 'Partager le réseau' : 'Importer un réseau';
+  }
+  function openSheet(tab) {
+    showTab(tab);
+    sheet.hidden = false;
+    if (tab === 'export') {
+      prepareExport();
+    } else {
+      importMsg.textContent = '';
+      $('#import-input').focus();
+    }
+  }
+  function closeSheet() { sheet.hidden = true; }
+
+  function prepareExport() {
+    var seq = ++exportSeq;
+    $('#export-link').value = 'Génération du lien…';
+    $('#export-code').value = '';
+    MetroShare.encode(state, cityId).then(function (code) {
+      if (seq !== exportSeq) return;
+      $('#export-link').value = location.origin + location.pathname + '#m=' + code;
+      $('#export-code').value = code;
+    }).catch(function () { toast('Export impossible.', true); });
+  }
+
+  function copyText(text, msg) {
+    if (!text) return;
+    function fallback() {
+      var ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); toast(msg); }
+      catch (e) { toast('Copie impossible : sélectionnez le texte à la main.', true); }
+      ta.remove();
+    }
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(text).then(function () { toast(msg); }, fallback);
+    } else {
+      fallback();
+    }
+  }
+
+  // Applique un réseau importé. Si c'est une autre ville, on l'enregistre puis on ouvre cette ville.
+  function applyImport(result) {
+    if (result.cityId !== cityId) {
+      safeSet(MetroCities.SAVE_PREFIX + result.cityId, JSON.stringify(result.state));
+      location.href = 'game.html?city=' + encodeURIComponent(result.cityId);
+      return;
+    }
+    if (playing) pause('edit');
+    checkpoint();
+    state = result.state;
+    ui.selected = null;
+    ui.activeLine = state.lines[0] && state.lines[0].id;
+    sim = null;
+    hidePopover();
+    commit();
+    fitView();
+    toast('Réseau importé ✓');
+  }
+
+  $('#export-btn').addEventListener('click', function () { openSheet('export'); });
+  $('#import-btn').addEventListener('click', function () { openSheet('import'); });
+  $('#sheet-close').addEventListener('click', closeSheet);
+  sheet.addEventListener('click', function (ev) { if (ev.target === sheet) closeSheet(); });
+  document.querySelectorAll('.sheet-tab').forEach(function (b) {
+    b.addEventListener('click', function () {
+      showTab(b.dataset.tab);
+      if (b.dataset.tab === 'export') prepareExport();
+    });
+  });
+  ['#export-link', '#export-code'].forEach(function (sel) {
+    $(sel).addEventListener('focus', function (ev) { ev.target.select(); });
+  });
+  $('#copy-link').addEventListener('click', function () { copyText($('#export-link').value, 'Lien copié !'); });
+  $('#copy-code').addEventListener('click', function () { copyText($('#export-code').value, 'Code copié !'); });
+  $('#import-go').addEventListener('click', function () {
+    importMsg.className = 'sheet-msg';
+    importMsg.textContent = 'Lecture du réseau…';
+    MetroShare.decode($('#import-input').value, MetroCities).then(function (result) {
+      if (result.cityId === cityId && state.stops.length &&
+          !confirm('Remplacer le réseau actuel par celui importé ? (Ctrl+Z pour annuler)')) {
+        importMsg.textContent = '';
+        return;
+      }
+      closeSheet();
+      applyImport(result);
+    }).catch(function (err) {
+      importMsg.className = 'sheet-msg';
+      importMsg.textContent = err && err.message ? err.message : 'Import impossible.';
+    });
+  });
+  window.addEventListener('keydown', function (ev) {
+    if (ev.key === 'Escape' && !sheet.hidden) closeSheet();
+  });
+
   // ---------- Démarrage ----------
   $('#city-name').textContent = city.name;
   document.title = city.name + ' — Metro Builder';
@@ -1447,6 +1558,16 @@
   commit();
   fitView();
   requestAnimationFrame(frame);
+
+  // Lien reçu (#m=…) : on l'ouvre directement, puis on retire le fragment pour ne pas réimporter au rechargement
+  (function openSharedLink() {
+    var m = /[#&]m=([^&]+)/.exec(location.hash);
+    if (!m) return;
+    history.replaceState(null, '', location.pathname + location.search);
+    MetroShare.decode(decodeURIComponent(m[1]), MetroCities).then(applyImport).catch(function (err) {
+      toast('Lien invalide : ' + (err && err.message ? err.message : 'import impossible.'), true);
+    });
+  })();
 
   // Accès pour le débogage depuis la console
   window.MetroGame = {

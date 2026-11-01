@@ -105,6 +105,10 @@ body.game {
   z-index: 10;
 }
 
+.language-toggle-game {
+  z-index: 1;
+}
+
 .city-pill {
   height: 52px;
   padding: 0 20px;

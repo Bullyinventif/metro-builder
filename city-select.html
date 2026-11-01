@@ -23,6 +23,7 @@
     </div>
   </main>
 
+  <script src="js/i18n.js?v=1"></script>
   <script src="js/cities.js?v=5"></script>
   <script>
     (function () {
@@ -103,7 +104,7 @@
         if (saved) {
           var badge = document.createElement('span');
           badge.className = 'badge';
-          badge.textContent = 'Reprendre';
+          badge.textContent = MetroI18n.t('Reprendre');
           card.appendChild(badge);
         }
 
@@ -121,20 +122,20 @@
           '<h2 class="city-name"></h2>' +
           '<p class="city-desc"></p>' +
           '<div class="city-meta"><span class="city-swatches">' + swatches + '</span>' +
-          '<span>' + city.lines.length + (city.lines.length > 1 ? ' lignes' : ' ligne') +
-          ' · ' + city.stops.length + ' arrêts</span></div>';
-        info.querySelector('.city-name').textContent = city.name;
-        info.querySelector('.city-desc').textContent = city.description;
+          '<span>' + city.lines.length + ' ' + MetroI18n.t(city.lines.length > 1 ? 'lignes' : 'ligne') +
+          ' · ' + city.stops.length + ' ' + MetroI18n.t(city.stops.length > 1 ? 'arrêts' : 'arrêt') + '</span></div>';
+        info.querySelector('.city-name').textContent = MetroCities.localizedName(city);
+        info.querySelector('.city-desc').textContent = MetroCities.localizedDescription(city);
         card.appendChild(info);
 
         if (saved) {
           var reset = document.createElement('button');
           reset.className = 'city-reset';
           reset.type = 'button';
-          reset.textContent = 'Recommencer à zéro';
+          reset.textContent = MetroI18n.t('Recommencer à zéro');
           reset.addEventListener('click', function (ev) {
             ev.stopPropagation();
-            if (confirm('Effacer la partie sauvegardée pour « ' + city.name + ' » ?')) {
+            if (confirm(MetroI18n.t('Effacer la partie sauvegardée pour « {name} » ?', { name: MetroCities.localizedName(city) }))) {
               MetroCities.clearSave(city.id);
               location.reload();
             }

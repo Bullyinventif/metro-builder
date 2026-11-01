@@ -452,7 +452,7 @@
   }
 
   function renameStop(s) {
-    var name = prompt('Nom de l’arrêt :', s.name);
+    var name = prompt(MetroI18n.t('Nom de l’arrêt :'), s.name);
     if (name === null) return;
     name = name.trim();
     if (!name || name === s.name) return;
@@ -462,7 +462,7 @@
   }
 
   function addLine() {
-    if (state.lines.length >= MAX_LINES) { toast('Nombre maximum de lignes atteint.'); return; }
+    if (state.lines.length >= MAX_LINES) { toast(MetroI18n.t('Nombre maximum de lignes atteint.')); return; }
     if (playing) pause('edit');
     var labels = state.lines.map(function (l) { return l.label; });
     var n = 1;
@@ -482,7 +482,7 @@
   }
 
   function resetMap() {
-    if (!confirm('Réinitialiser la carte « ' + city.name + ' » ? Vos modifications seront perdues (Ctrl+Z pour annuler).')) return;
+    if (!confirm(MetroI18n.t('Réinitialiser la carte « {name} » ? Vos modifications seront perdues (Ctrl+Z pour annuler).', { name: MetroCities.localizedName(city) }))) return;
     if (playing) pause('edit');
     checkpoint();
     state = MetroCities.buildInitialState(cityId);
@@ -1102,7 +1102,7 @@
     var failed = validation.results.filter(function (r) { return !r.ok; }).length;
     var status = $('#rules-status');
     status.className = 'rules-status ' + (failed ? 'ko' : 'ok');
-    status.textContent = failed ? (failed + (failed > 1 ? ' règles à corriger' : ' règle à corriger')) : 'Prêt pour la lecture';
+    status.textContent = failed ? (failed + ' ' + MetroI18n.t(failed > 1 ? 'règles à corriger' : 'règle à corriger')) : MetroI18n.t('Prêt pour la lecture');
     $('#rules-list').innerHTML = validation.results.map(function (r) {
       return '<li class="rule ' + (r.ok ? 'ok' : 'ko') + '"><span class="rule-icon">' + (r.ok ? CHECK : CROSS) + '</span>' +
         '<div><div class="rule-title">' + esc(r.title) + '</div>' +
@@ -1601,8 +1601,8 @@
   });
 
   // ---------- Démarrage ----------
-  $('#city-name').textContent = city.name;
-  document.title = city.name + ' — Metro Builder';
+  $('#city-name').textContent = MetroCities.localizedName(city);
+  document.title = MetroCities.localizedName(city) + ' — Metro Builder';
   resize();
   commit();
   fitView();

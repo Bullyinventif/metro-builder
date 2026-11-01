@@ -63,6 +63,37 @@ button {
   font-family: inherit;
 }
 
+.language-toggle {
+  position: relative;
+  flex: none;
+  min-width: 48px;
+  height: 40px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 999px;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.25s var(--spring), background 0.2s var(--ease);
+}
+
+.language-toggle-home {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 20;
+}
+
+.language-toggle-page {
+  align-self: center;
+}
+
+.language-toggle:hover {
+  transform: scale(1.06);
+  background: var(--surface-solid);
+}
+
 /* ---------- Surfaces ---------- */
 
 .glass {

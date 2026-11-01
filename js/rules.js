@@ -108,7 +108,10 @@
     var usedLines = [];
     A.lines.forEach(function (L) { if (L.used) usedLines.push(L); });
     function name(id) { var s = A.stops.get(id); return s ? s.name : '?'; }
-    function add(id, title, ok, message) { results.push({ id: id, title: title, ok: ok, message: ok ? '' : message }); }
+    function add(id, title, ok, message) {
+      results.push({ id: id, title: global.MetroI18n ? global.MetroI18n.t(title) : title,
+        ok: ok, message: ok ? '' : message });
+    }
 
     // 1. Au moins 3 arrêts
     add('min-stops', 'Au moins 3 arrêts', state.stops.length >= 3,

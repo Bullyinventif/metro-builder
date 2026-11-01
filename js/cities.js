@@ -460,6 +460,26 @@
     try { localStorage.removeItem(SAVE_PREFIX + id); } catch (e) { /* stockage indisponible */ }
   }
 
+  var ENGLISH_CITIES = {
+    vierge: ['Blank', 'A single loop line to get started. Everything else is yours to imagine.'],
+    paris: ['Paris', 'Lines 2 and 6 form a ring around the center, crossed by lines 1, 4, 13 and 14.'],
+    londres: ['London', 'The Circle line loops around the center; Central, Victoria, Northern and Jubilee connect to it.'],
+    'new-york': ['New York', 'Manhattan from north to south, connected to Queens and Brooklyn by lines 7, L and N.'],
+    tokyo: ['Tokyo', 'The Yamanote loop surrounds the center, crossed by the Ginza, Marunouchi, Hibiya and Tozai lines.'],
+    berlin: ['Berlin', 'The Ringbahn circles the city; lines U2, U6, U7 and U8 cross it.'],
+    madrid: ['Madrid', 'The Circular (line 6) surrounds the center, with Sol connecting lines 1, 2 and 3.'],
+    moscou: ['Moscow', 'The famous Koltsevaya circle line connects all the radial lines crossing the center.'],
+    montreal: ['Montreal', 'No circular line: the loop is formed between the orange and green lines, from Lionel-Groulx to Berri-UQAM.']
+  };
+  function localizedName(city) {
+    var en = ENGLISH_CITIES[city.id];
+    return MetroI18n && MetroI18n.locale() === 'en' && en ? en[0] : city.name;
+  }
+  function localizedDescription(city) {
+    var en = ENGLISH_CITIES[city.id];
+    return MetroI18n && MetroI18n.locale() === 'en' && en ? en[1] : city.description;
+  }
+
   global.MetroCities = {
     SAVE_PREFIX: SAVE_PREFIX,
     PALETTES: PALETTES,
@@ -468,6 +488,8 @@
     get: get,
     palette: palette,
     colorHex: colorHex,
+    localizedName: localizedName,
+    localizedDescription: localizedDescription,
     buildInitialState: buildInitialState,
     hasSave: hasSave,
     clearSave: clearSave
